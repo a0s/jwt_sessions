@@ -105,7 +105,7 @@ module JWTSessions
     def self.flush_all(store = JWTSessions.token_store)
       tokens = RefreshToken.all(nil, store)
       tokens.each do |token|
-        # TODO: need to fetch all access token
+        # TODO: need to fetch all access tokenn
         AccessToken.destroy(token.access_uid, store, namespace)
         token.destroy
       end.count
