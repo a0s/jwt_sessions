@@ -78,7 +78,7 @@ module JWTSessions
     def flush_by_uid(uid)
       token = retrieve_refresh_token(uid)
 
-      AccessToken.destroy(token.access_uid, store)
+      AccessToken.destroy(token.access_uid, store, namespace)
       token.destroy
     end
 
@@ -87,7 +87,7 @@ module JWTSessions
       return 0 unless namespace
       tokens = RefreshToken.all(namespace, store)
       tokens.each do |token|
-        AccessToken.destroy(token.access_uid, store)
+        AccessToken.destroy(token.access_uid, store, namespace)
         # unlink refresh token from the current access token
         token.update(nil, nil, token.csrf)
       end.count
@@ -97,7 +97,7 @@ module JWTSessions
       return 0 unless namespace
       tokens = RefreshToken.all(namespace, store)
       tokens.each do |token|
-        AccessToken.destroy(token.access_uid, store)
+        AccessToken.destroy(token.access_uid, store, namespace)
         token.destroy
       end.count
     end
@@ -105,7 +105,8 @@ module JWTSessions
     def self.flush_all(store = JWTSessions.token_store)
       tokens = RefreshToken.all(nil, store)
       tokens.each do |token|
-        AccessToken.destroy(token.access_uid, store)
+        # TODO: need to fetch all access token
+        AccessToken.destroy(token.access_uid, store, namespace)
         token.destroy
       end.count
     end
@@ -132,7 +133,7 @@ module JWTSessions
 
     def refresh_by_uid(&block)
       check_refresh_on_time(&block) if block_given?
-      AccessToken.destroy(@_refresh.access_uid, store)
+      AccessToken.destroy(@_refresh.access_uid, store, namespace)
       issue_tokens_after_refresh
     end
 
@@ -148,7 +149,7 @@ module JWTSessions
 
     def access_token_data(token, _first_match = false)
       uid = token_uid(token, :access, @access_claims)
-      data = store.fetch_access(uid)
+      data = store.fetch_access(uid, namespace)
       raise Errors::Unauthorized, "Access token not found" if data.empty?
       data
     end
@@ -257,6 +258,7 @@ module JWTSessions
         @_csrf.encoded,
         payload,
         store,
+        namespace,
         JWTSessions.custom_access_expiration(@_access_exp)
       )
       @access_token = @_access.token

@@ -3,11 +3,11 @@
 module JWTSessions
   module StoreAdapters
     class AbstractStoreAdapter
-      def fetch_access(_uid)
+      def fetch_access(_uid, _namespace)
         raise NotImplementedError
       end
 
-      def persist_access(_uid, _csrf, _expiration)
+      def persist_access(_uid, _csrf, _expiration, _namespace)
         raise NotImplementedError
       end
 
@@ -32,7 +32,7 @@ module JWTSessions
         raise NotImplementedError
       end
 
-      def destroy_access(_uid)
+      def destroy_access(_uid, namespace)
         raise NotImplementedError
       end
     end

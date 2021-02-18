@@ -20,13 +20,13 @@ module JWTSessions
         end
       end
 
-      def fetch_access(uid)
-        csrf = storage.get(access_key(uid))
+      def fetch_access(uid, namespace)
+        csrf = storage.get(access_key(uid, namespace))
         csrf.nil? ? {} : { csrf: csrf }
       end
 
-      def persist_access(uid, csrf, expiration)
-        key = access_key(uid)
+      def persist_access(uid, csrf, expiration, namespace)
+        key = access_key(uid, namespace)
         storage.set(key, csrf)
         storage.expireat(key, expiration)
       end
@@ -74,8 +74,9 @@ module JWTSessions
         storage.del(key)
       end
 
-      def destroy_access(uid)
-        storage.del(access_key(uid))
+      def destroy_access(uid, namespace)
+        key = full_access_key(uid, namespace)
+        storage.del(key)
       end
 
       private
@@ -109,6 +110,10 @@ module JWTSessions
         "#{prefix}_#{namespace}_refresh_#{uid}"
       end
 
+      def full_access_key(uid, namespace)
+        "#{prefix}_#{namespace}_access_#{uid}"
+      end
+
       def first_refresh_key(uid)
         key = full_refresh_key(uid, "*")
         (storage.keys(key) || []).first
@@ -119,8 +124,9 @@ module JWTSessions
         full_refresh_key(uid, namespace)
       end
 
-      def access_key(uid)
-        "#{prefix}_access_#{uid}"
+      def access_key(uid, namespace)
+        namespace = "*" if namespace.to_s.empty?
+        full_access_key(uid, namespace)
       end
 
       def uid_from_key(key)
