@@ -14,17 +14,17 @@ class TestAccessToken < Minitest::Test
     @access_token = JWTSessions::AccessToken.create(@csrf.encoded,
                                                     @payload,
                                                     JWTSessions.token_store,
-                                                    namespace)
+                                                    nil)
   end
 
   def test_csrf
-    token = JWTSessions.token_store.fetch_access(access_token.uid)
+    token = JWTSessions.token_store.fetch_access(access_token.uid, nil)
     assert_equal token[:csrf], access_token.csrf
     access_token.destroy
   end
 
   def test_destroy
-    JWTSessions::AccessToken.destroy(access_token.uid, JWTSessions.token_store, namespace)
+    JWTSessions::AccessToken.destroy(access_token.uid, JWTSessions.token_store, nil)
     token = JWTSessions.token_store.fetch_access(access_token.uid)
     assert_equal({}, token)
   end
