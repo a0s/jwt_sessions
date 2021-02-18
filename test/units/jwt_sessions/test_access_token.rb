@@ -25,7 +25,7 @@ class TestAccessToken < Minitest::Test
 
   def test_destroy
     JWTSessions::AccessToken.destroy(access_token.uid, JWTSessions.token_store, nil)
-    token = JWTSessions.token_store.fetch_access(access_token.uid)
+    token = JWTSessions.token_store.fetch_access(access_token.uid, nil)
     assert_equal({}, token)
   end
 end
