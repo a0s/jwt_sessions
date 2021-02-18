@@ -291,12 +291,12 @@ class TestSession < Minitest::Test
     uid = access_token.uid
     ruid = refresh_token.uid
 
-    assert_equal access_token.csrf, JWTSessions::AccessToken.find(uid, JWTSessions.token_store).csrf
+    assert_equal access_token.csrf, JWTSessions::AccessToken.find(uid, JWTSessions.token_store, namespace).csrf
     flushed_count = @session1.flush_namespaced_access_tokens
 
     assert_equal 1, flushed_count
     assert_raises JWTSessions::Errors::Unauthorized do
-      JWTSessions::AccessToken.find(uid, JWTSessions.token_store)
+      JWTSessions::AccessToken.find(uid, JWTSessions.token_store, namespace)
     end
     assert_equal ruid, JWTSessions::RefreshToken.find(ruid, JWTSessions.token_store, namespace).uid
   end
@@ -317,7 +317,7 @@ class TestSession < Minitest::Test
       raise JWTSessions::Errors::Unauthorized
     end
     auid = session.instance_variable_get(:"@_access").uid
-    access_token = JWTSessions::AccessToken.find(auid, JWTSessions.token_store)
+    access_token = JWTSessions::AccessToken.find(auid, JWTSessions.token_store, namespace)
     refresh_token = JWTSessions::RefreshToken.find(ruid, JWTSessions.token_store, namespace)
 
     assert_equal false, access_token.uid.size.zero?
